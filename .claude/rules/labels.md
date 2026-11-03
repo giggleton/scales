@@ -23,7 +23,7 @@ paths:
 as R's `format()` does in a zone, `Scales.Labels.Wrap` breaking text as R's `strwrap()` does and
 `Scales.Labels.Width` counting its characters as R does; and plainly, the
 Elixir way (`plain/1`, `scales.md`), the default labels of a number's transformations.
-Why list functions: design-log §4, the entry beginning "`labels:` takes a list"; why these
+Why list functions: Giggly's design log §4, the entry beginning "`labels:` takes a list"; why these
 names and options: the entry beginning "`Scales.Labels`'s"; why `format()` is ported whole: the
 entry beginning "R's `format()` for numbers"; why a missing break's label is `nil`: the entry
 beginning "A missing break's label"; why a power is a value: the entries beginning "`log/2`
@@ -109,7 +109,7 @@ and "`wrap/2` takes"; why `dictionary/2` matches and takes what it does: "`dicti
   decimals and 256 characters `decimals:` writes at most it takes `Labels.Format`'s exact digits,
   as R's `format(scientific = FALSE)` writes them, so no double raises (design-log §4, the entry
   beginning "A plain label past").
-- **Its options are NimbleOptions schemas, as every public option in Giggly is**, so a bad one
+- **Its options are NimbleOptions schemas, as every public option in the package is**, so a bad one
   raises `NimbleOptions.ValidationError` and each formatter's option docs are generated from its
   schema; its boundary lists NimbleOptions and nothing else. The package's transformations call
   `plain/1` for their default labels, or `plain_round_tripped/1`, 14 significant digits first,

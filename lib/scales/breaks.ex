@@ -41,7 +41,7 @@ defmodule Scales.Breaks do
   # Its modulus is one: past 10^22 a step and its breaks are rounded, and R's long-double
   # remainder of a break through zero is that rounding, which denies it the bonus for zero that
   # the remainder in doubles, exactly 0, grants; so on ranges over about 3e23 wide reaching zero,
-  # about one in six, Giggly's breaks may pass through zero where R's do not.
+  # about one in six, these breaks may pass through zero where R's do not.
 
   alias Scales.{Bounds, DateBreaks, Double, Palette, Transform}
 

@@ -12,15 +12,14 @@ mixes two as ggplot2's geoms mix their defaults, changes one as R's colour helpe
 the one module that calls the `color` library. Why colours are CSS's and carried as hex
 strings: design-log §4, the entry beginning "Colours are CSS's names and hex forms"; why the
 library is handed R's constants, and why the module is not called `Color`: the entry beginning
-"R's exact colours come from the `color` package"; why it nests under the umbrella: the entry
-beginning "A library's owner nests".
+"R's exact colours come from the `color` package"; why its library is listed at the root:
+Giggly's design log, the entry beginning "A library's owner nests".
 
 ## Rules
 
-- **It is the `color` library's only caller.** Its boundary lists `Color` alone, which the root
-  lists too, as boundary lets a sub-boundary list only what its parent does, and no other domain
-  lists it, as `Giggly.DataFrame` owns `table` (`.claude/rules/dependencies.md`); a boundary that
-  needs a colour lists `Scales.ColorOperations`, its sibling, as `Plot`, `Scale` and `Geom` do. A test
+- **It is the `color` library's only caller.** The root's boundary lists `Color` for it, and no
+  other module of the package calls the library; Giggly reaches colours through
+  `Scales.ColorOperations`, which the root exports. A test
   never calls the library either: its expected colours come from CSS's table, or from R.
 - **A colour has one spelling**: uppercase `#RRGGBB`, or `#RRGGBBAA` when it carries an alpha of its
   own, an alpha of FF dropped as opaque; and `:none`, R's `NA`, which draws nothing. No struct: it
@@ -76,7 +75,7 @@ beginning "A library's owner nests".
   opaque. It matched R on every colour of 19,794 calls, every palette and count to 256 among
   them; its tests pin R's colours, two places whose channel lands exactly on a rounding tie among
   them. **At such a tie R's own answer depends on its BLAS**, which rounds the matrix product's
-  last bit by library and processor (of 1,003 tie places a search found, OpenBLAS gives Giggly's
-  colour at 885, R's internal product at 875); Giggly adds the products left to right, as the
-  sum written out in R does. `viridis_options/0` names the palettes, as `Plot` checks `option:`
-  against them.
+  last bit by library and processor (of 1,003 tie places a search found, OpenBLAS gives the
+  package's colour at 885, R's internal product at 875); the package adds the products left to
+  right, as the sum written out in R does. `viridis_options/0` names the palettes, as Giggly's
+  `Plot` checks `option:` against them.

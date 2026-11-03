@@ -74,30 +74,30 @@ defmodule Scales.ColorOperations do
   # 2026-10-28, the library over the textbook formula written out here).
   #
   # `viridis/2` is R's `viridisLite::viridis(n, alpha, begin, end, direction, option)`: `count`
-  # places spaced from `begin` to `end` by R's `seq()`, the two swapped for a `direction` of -1;
-  # the palette's colour at each place, its L*, a* and b* each a cubic spline evaluated there; that
+  # places spaced from `begin` to `end` by R's `seq()`, the two swapped for a `direction` of -1; the
+  # palette's colour at each place, its L*, a* and b* each a cubic spline evaluated there; that
   # colour converted back to sRGB as grDevices' `convertColor()` converts it; and the alpha
-  # appended. The splines are R's own, the "fmm" splines `grDevices::colorRamp(space = "Lab",
-  # interpolate = "spline")` fits through a palette's 256 colours, their coefficients copied into
-  # `priv/palettes/viridis_splines.csv`, whose header says how R wrote them, and read when Giggly
-  # compiles; a place's value is `y + dx * (b + dx * (c + dx * d))` at the knot at or before it,
-  # found by bisection as R's `spline_eval()` finds it. R keeps the last place's knot while it
-  # still holds the next place, which changes no colour. The conversion is the library's again,
-  # handed grDevices' constants this time: its white point made from its own D65, (0.3137, 0.3291),
-  # by its `c2to3()`, and the sRGB matrix it inverts from that, which are not farver's; then each
-  # channel companded, rounded to five decimals as R's `round()` rounds, clipped to 0 to 1, and
-  # written as `rgb()` writes it, the byte `255 * channel + 0.5` truncated. R multiplies each
-  # channel by 255 and divides it again on the way, which changes no byte of any value the
-  # rounding gives, and is left out. The alpha is `rgb()`'s byte too, dropped when it is opaque.
-  # It matched R on every colour of every palette for every count to 256, and on thousands of
-  # beginnings, ends, directions and alphas. R multiplies by the matrix through its BLAS, whose
-  # last bit depends on the library and the processor, so where a channel lands exactly on a
-  # rounding tie R's own answer varies: of 1,003 such places a search found, R with OpenBLAS gives
-  # Giggly's colour at 885 and R's internal product at 875. Giggly adds the three products left to
-  # right, as the sum written out in R does.
+  # appended. The splines are R's own, the "fmm" splines
+  # `grDevices::colorRamp(space = "Lab", interpolate = "spline")` fits through a palette's 256
+  # colours, their coefficients copied into `priv/palettes/viridis_splines.csv`, whose header says
+  # how R wrote them, and read when the package compiles; a place's value is
+  # `y + dx * (b + dx * (c + dx * d))` at the knot at or before it, found by bisection as R's
+  # `spline_eval()` finds it. R keeps the last place's knot while it still holds the next place,
+  # which changes no colour. The conversion is the library's again, handed grDevices' constants this
+  # time: its white point made from its own D65, (0.3137, 0.3291), by its `c2to3()`, and the sRGB
+  # matrix it inverts from that, which are not farver's; then each channel companded, rounded to
+  # five decimals as R's `round()` rounds, clipped to 0 to 1, and written as `rgb()` writes it, the
+  # byte `255 * channel + 0.5` truncated. R multiplies each channel by 255 and divides it again on
+  # the way, which changes no byte of any value the rounding gives, and is left out. The alpha is
+  # `rgb()`'s byte too, dropped when it is opaque. It matched R on every colour of every palette for
+  # every count to 256, and on thousands of beginnings, ends, directions and alphas. R multiplies by
+  # the matrix through its BLAS, whose last bit depends on the library and the processor, so where a
+  # channel lands exactly on a rounding tie R's own answer varies: of 1,003 such places a search
+  # found, R with OpenBLAS gives this package's colour at 885 and R's internal product at 875. The
+  # package adds the three products left to right, as the sum written out in R does.
 
   # The library's one caller: the `Scales` boundary lists `Color` for it, and nothing else in the
-  # package or in Giggly calls it.
+  # package calls it.
   alias Color.Conversion.Lindbloom
   alias Color.CSS.Names
 
@@ -144,7 +144,7 @@ defmodule Scales.ColorOperations do
   # viridisLite's palettes, in the order of its options A to H, which the splines' file holds.
   @viridis_options [:magma, :inferno, :plasma, :viridis, :cividis, :rocket, :mako, :turbo]
 
-  @viridis_splines_path Application.app_dir(:giggly, "priv/palettes/viridis_splines.csv")
+  @viridis_splines_path Application.app_dir(:scales, "priv/palettes/viridis_splines.csv")
   @external_resource @viridis_splines_path
 
   # why: the splines are read once, at compile time; no IO happens when a colour is made

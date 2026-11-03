@@ -159,7 +159,7 @@ defmodule Scales.Palette do
     {15, 1}
   ]
 
-  @brewer_path Application.app_dir(:giggly, "priv/palettes/brewer.csv")
+  @brewer_path Application.app_dir(:scales, "priv/palettes/brewer.csv")
   @external_resource @brewer_path
 
   # why: RColorBrewer's sets are read once, at compile time; no IO happens when a palette is used

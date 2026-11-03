@@ -1,7 +1,8 @@
 ---
 paths:
   - "lib/scales.ex"
-  - "lib/scales/**"
+  - "lib/scales/*.ex"
+  - "lib/scales/transform/**"
   - "priv/palettes/brewer.csv"
   - "test/scales/**"
   - "test/scales_test.exs"
@@ -9,25 +10,23 @@ paths:
 
 # The scales package
 
-`Scales` is R's scales half of a plot's scales, the package that leaves this repository once
-complete: breaks, labels, transformations, palettes, values against a range's bounds
+`Scales` is R's scales half of a plot's scales, carved out of Giggly
+(github.com/giggleton/giggly): breaks, labels, transformations, palettes, values against a range's bounds
 (`Scales.Bounds`), the range of the data a scale trains on (`Scales.DataRange`), and colour
 operations (`color_operations.md`) and labels (`labels.md`), each with a rules file of its own.
-Giggly's half, a scale's kind, defaults, training and mapping, is `Giggly.Scale` (`scale.md`).
-Why the split falls on R's line and the package is carved here first: design-log §4, the entry
-beginning "`scales`, a package of R's scales half"; why its files were moved by name alone: the
-entry beginning "The split moves files under `Scales.`". Why breaks come from extended Wilkinson
-and labels are written the Elixir way: the entry beginning "Axes are drawn"; why minor breaks are
-R's regular ones: the entry beginning "The panel's grid lines are placed by the coordinate system".
+ggplot2's half, a scale's kind, defaults, training and mapping, is Giggly's `Giggly.Scale`. Why
+the split falls on R's line: Giggly's design log §4, the entry beginning "`scales`, a package of
+R's scales half"; why breaks come from extended Wilkinson and labels are written the Elixir way:
+the entry beginning "Axes are drawn"; why minor breaks are R's regular ones: the entry beginning
+"The panel's grid lines are placed by the coordinate system".
 
 ## Rules
 
-- **The package depends on nothing in Giggly.** Its boundary lists `Color` and `NimbleOptions`
-  alone and exports what Giggly's code calls, so a call back into Giggly fails the build, as it
-  would from another repository; Giggly's domains reach it through the root, which lists it.
-  **Nor do its tests**: `test/scales` and `test/scales_test.exs` leave with the package, so they
-  call only `Scales` and pin R's figures there, alone running every line of `lib/scales`; a test
-  of a Giggly scale through the package is Giggly's, in `test/giggly`.
+- **The package depends on no charting library.** Its boundary lists `Color` and
+  `NimbleOptions` alone and exports what Giggly's code calls, which Giggly's boundaries hold its
+  calls to. **Nor do its tests**: `test/scales` and `test/scales_test.exs` call only `Scales` and
+  pin R's figures, alone running every line of `lib/`; a test of a Giggly scale through the
+  package is Giggly's.
 - **A module is API when a user holds its inputs or Giggly calls it** (design-log §4, the entry
   beginning "The scales package's API is what a user holds"): the root and each of R's families,
   their functions R's names less the family's prefix, each `@doc` naming R's function and saying
@@ -49,10 +48,10 @@ R's regular ones: the entry beginning "The panel's grid lines are placed by the 
   `pal_brewer()`. A `nil` place gives `nil`, an infinite or NaN one R's answer. Each matched R to
   the last digit; its tests pin R's
   figures. ggplot2's palettes, the ordinal sequences and a manual
-  palette matched by name or by breaks, are Giggly's (`scale.md`).
+  palette matched by name or by breaks, are Giggly's.
 - **A discrete palette past its end gives `nil`, as R gives `NA`, and raises nothing**: R also
   warns, which a pure library cannot, and refusing is the caller's, so no message of the package
-  names one (Giggly's scale raises, `scale.md`). No levels give none, where R's hue palette
+  names one (Giggly's scale raises). No levels give none, where R's hue palette
   refuses them.
 - **The shape palette gives R's 16, 17, 15, 3, 7 and 8, or open, 1, 2, 0, 3, 7 and 8, as their
   names** (`:circle_small`, `:triangle`, `:square`, `:plus`, `:square_cross`, `:asterisk`, the
@@ -423,8 +422,8 @@ R's regular ones: the entry beginning "The panel's grid lines are placed by the 
   reaches the limit and never one out, spread as R's `seq()` spreads them, the multiple zero
   exactly 0. Dates and date-times are their transformation's, typed, each a `{break, label}` pair,
   the label R's name for it, `Transform.format/4`'s with the same `n:`, a zero-wide range's
-  written in full as R writes a break it has not named (design-log §4, the entry beginning "A
-  breaks function"); times numbers' on their
+  written in full as R writes a break it has not named (Giggly's design log §4, the entry beginning
+  "A breaks function"); times numbers' on their
   seconds, wrapped past midnight; a zero-wide range its first limit. Refused: limits past 1e307 and a width per interval under the smallest
   normal float, where R answers or warns. All of 1,500 whole-number ranges, 2,946 of 2,992 round
   and 2,567 of 2,699 random ones matched R, the rest at an end, where R counts a limit within a

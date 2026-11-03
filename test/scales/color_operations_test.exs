@@ -5,11 +5,11 @@ defmodule Scales.ColorOperationsTest do
 
   alias Scales.ColorOperations
 
-  # Golden: CSS Color Module Level 4's table of named colours and its four hex forms, never Giggly's
-  # or the library's: `steelblue` is #4682B4, CSS's `gray` #808080 and `green` #008000 where R's are
-  # #BEBEBE and #00FF00; but `transparent` is R's, white with no alpha, where CSS's is black. It
-  # moves only with what `parse/1` takes, never with the library's table, which may hold more than
-  # CSS's.
+  # Golden: CSS Color Module Level 4's table of named colours and its four hex forms, never the
+  # package's or the library's: `steelblue` is #4682B4, CSS's `gray` #808080 and `green` #008000
+  # where R's are #BEBEBE and #00FF00; but `transparent` is R's, white with no alpha, where CSS's is
+  # black. It moves only with what `parse/1` takes, never with the library's table, which may hold
+  # more than CSS's.
   describe "parse/1" do
     test "a CSS colour name is its hex, in any case, as CSS matches a keyword" do
       assert ColorOperations.parse("steelblue") === {:ok, "#4682B4"}
@@ -514,7 +514,7 @@ defmodule Scales.ColorOperationsTest do
 
     # Golden: `viridis(1, begin = place, option = "turbo")`, whose blue is exactly 0.982355 and
     # 0.966665 before R rounds it, each tie a byte apart either way, found by a search over the
-    # palettes and read back from R with OpenBLAS, whose last bit here agrees with Giggly's.
+    # palettes and read back from R with OpenBLAS, whose last bit here agrees with the package's.
     test "a channel on a five-decimal tie rounds to the even last decimal, as R's round() does" do
       assert viridis(1, begin: 0.21809360163495614, option: :turbo) === ["#37A7FB"]
       assert viridis(1, begin: 0.22852560046188131, option: :turbo) === ["#32ADF6"]

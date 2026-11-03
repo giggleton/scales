@@ -55,14 +55,14 @@ defmodule Scales do
       ["#132B43", "#56B1F7", "#275278", nil]
   """
 
-  # R's scales half of a plot's scales, the package that will leave this repository once
-  # complete (design-log §4, the entry beginning "`scales`, a package of R's scales half"). It
-  # works on plain values and depends on nothing in Giggly; ggplot2's half, a scale's kind, its
-  # defaults, its training and mapping, stays in `Giggly.Scale`.
+  # R's scales half of a plot's scales, carved out of Giggly (github.com/giggleton/giggly), whose
+  # `Giggly.Scale` keeps ggplot2's half: a scale's kind, its defaults, its training and mapping.
+  # It works on plain values and depends on no charting library.
   #
   # It lists `Color`, which `Scales.ColorOperations` converts colours with, and `NimbleOptions`,
-  # which checks its functions' options. It exports what Giggly's code calls, `Labels` for a
-  # facet's wrapped strips; what a user calls is the documented API (CLAUDE.md, Conventions).
+  # which checks its functions' options. It exports what Giggly's code calls, which Giggly's own
+  # boundaries read, `Labels` for a facet's wrapped strips; what a user calls is the documented API
+  # (CLAUDE.md, Conventions).
   use Boundary,
     deps: [Color, NimbleOptions],
     exports: [Bounds, ColorOperations, DataRange, Labels, Palette, Transform]
