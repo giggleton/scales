@@ -223,8 +223,8 @@ semver or the changelog).
   `dev/`'s tooling (its mix tasks classified into it by hand via `classify_to:`), and it is strict —
   `boundary: [default: [type: :strict]]` in `mix.exs`, pinned by the declarations test, which also
   fails on any declaration setting `type: :relaxed` — so its `deps:` names every outside library
-  it calls. Its `exports:` are what Giggly's boundaries hold Giggly's calls to, since Boundary
-  reads a dependency's compiled declarations. `mix boundary.spec` prints the current graph. Six constraints govern
+  it calls. It exports every module, since Boundary reads a dependency's compiled declarations
+  and would otherwise hold a caller that runs it to less than the documented API. `mix boundary.spec` prints the current graph. Six constraints govern
   any change to it, each found by compiling rather than by reading the docs: **(1)** `check: [in:
   false]` / `[out: false]` is legal **only on a top-level boundary**, and such a boundary may not
   contain sub-boundaries; **(2)** a boundary with `check.in` false may not be exported from, nor

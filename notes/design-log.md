@@ -74,13 +74,17 @@ deleted from the entry it was in, never marked superseded; git history keeps eve
   every shared entry in both logs*: a decision with two homes, one edit leaving the other wrong.
   *Rejected: everything left in Giggly's*: the package's decisions unreadable from its own
   repository.
-- **The package keeps `use Boundary` (2026-11-02, Steve: "Yes").** `{:boundary, "~> 0.11",
-  runtime: false}` is compiled by a user's project, never started and out of a release, with no
-  dependencies of its own; Giggly and Pica list it already. Boundary reads a dependency's compiled
-  declarations, so Giggly's one `Scales` entry stays held to the root's exports, where an
-  undeclared package is an implicit boundary exporting its root alone and Giggly would list each
-  module it calls. *Rejected: dropping the declarations*: one small compile-time dependency saved
-  for a user of Scales alone, at the cost of Giggly's checks of its calls into it.
+- **The package keeps `use Boundary`, and its one boundary exports every module (2026-11-02,
+  Steve: "Yes"; `exports: :all` 2026-11-03, Steve: "Yes", released as 0.1.1).** `{:boundary,
+  "~> 0.11", runtime: false}` is compiled by a user's project, never started and out of a
+  release, with no dependencies of its own; Giggly and Pica list it already. It holds the
+  package's own calls out to its `deps:`. Boundary also holds a caller that runs it to a
+  dependency's exports, and a library marks what is API by its documentation, `@moduledoc false`
+  and private functions, not by policing its callers; 0.1.0's list of six left out the
+  documented `Scales.Breaks`, so a caller's boundaries refused calls its documentation offered, a
+  bug, hence a patch. *Rejected: dropping the declarations*: the same to callers, but the
+  package's own `deps:` unchecked. *Rejected: adding `Breaks` and `MinorBreaks` to the list*: it
+  fixes today's call and keeps a second statement of the API that can drift from the first.
 - **The package's metadata (2026-11-02, Steve: "Yes").** `:scales` 0.1.0, `elixir: "~> 1.20"`,
   `giggleton/scales`, MIT; `THIRD_PARTY_NOTICES.md` carries ColorBrewer's copyright with Apache
   2.0's text and viridisLite's MIT notice, since the palettes ship in `priv/`; `color` pinned to

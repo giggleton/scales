@@ -60,12 +60,13 @@ defmodule Scales do
   # It works on plain values and depends on no charting library.
   #
   # It lists `Color`, which `Scales.ColorOperations` converts colours with, and `NimbleOptions`,
-  # which checks its functions' options. It exports what Giggly's code calls, which Giggly's own
-  # boundaries read, `Labels` for a facet's wrapped strips; what a user calls is the documented API
-  # (CLAUDE.md, Conventions).
+  # which checks its functions' options. It exports every module, so a caller's own boundaries
+  # hold it to nothing the documentation does not: what a user calls is the documented API
+  # (CLAUDE.md, Conventions), and a module the documentation leaves out is internal, as any
+  # library's is.
   use Boundary,
     deps: [Color, NimbleOptions],
-    exports: [Bounds, ColorOperations, DataRange, Labels, Palette, Transform]
+    exports: :all
 
   @typedoc """
   A double as R holds one: a number; `:infinity` or `:neg_infinity`; `:nan`, R's `NaN`, not a

@@ -63,8 +63,8 @@ invariants. Add a line here when an area gets its rules file; nothing else about
   `mix.exs`), so a forbidden reference is a compiler warning and therefore a gate failure under
   `--warnings-as-errors`. Every boundary is strict (the `mix.exs` default, pinned by
   `boundary_declarations_test.exs`), so a boundary's `deps:` is the whole of what it may call,
-  outside libraries included. `Scales` is the one boundary; its `exports:` are what Giggly's
-  boundaries hold Giggly's calls to. What boundary cannot see — the standard library — the
+  outside libraries included. `Scales` is the one boundary, and it exports every module, so a
+  caller's own boundaries hold it to nothing the documentation does not. What boundary cannot see — the standard library — the
   `CorePurity` credo check covers over all of `lib/`: no clock, config, unseeded randomness,
   process or IO, an impure module excluded by name. **`mix boundary.spec` prints the graph**, and
   no list here restates it. Widening a boundary's `deps:` or `exports:` is a decision for the

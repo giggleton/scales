@@ -23,8 +23,9 @@ the entry beginning "Axes are drawn"; why minor breaks are R's regular ones: the
 ## Rules
 
 - **The package depends on no charting library.** Its boundary lists `Color` and
-  `NimbleOptions` alone and exports what Giggly's code calls, which Giggly's boundaries hold its
-  calls to. **Nor do its tests**: `test/scales` and `test/scales_test.exs` call only `Scales` and
+  `NimbleOptions` alone and exports every module, so a caller's own boundaries hold it to no
+  more than the documentation does (design-log §4, the entry beginning "The package keeps `use
+  Boundary`"). **Nor do its tests**: `test/scales` and `test/scales_test.exs` call only `Scales` and
   pin R's figures, alone running every line of `lib/`; a test of a Giggly scale through the
   package is Giggly's.
 - **A module is API when a user holds its inputs or Giggly calls it** (design-log §4, the entry
