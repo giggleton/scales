@@ -1654,4 +1654,39 @@ defmodule Scales.LabelsTest do
              ]
     end
   end
+
+  describe "format/2" do
+    test "writes a vector as R's format() does, together, padded unless trimmed" do
+      # format(c(1, 10, 100)); format(c(0.5, 2), digits = 3)
+      assert Labels.format([1, 10, 100]) == ["  1", " 10", "100"]
+      assert Labels.format([0.5, 2], digits: 3) == ["0.5", "2.0"]
+      # format(c(-1.5, 2), trim = TRUE); format(c(0, 0.005, 0.010), digits = 3, trim = TRUE)
+      assert Labels.format([-1.5, 2], trim: true) == ["-1.5", "2.0"]
+
+      assert Labels.format([0, 0.005, 0.010], digits: 3, trim: true) == [
+               "0.000",
+               "0.005",
+               "0.010"
+             ]
+    end
+
+    test "takes nsmall, scientific and the decimal mark as R's arguments" do
+      # format(0.1, nsmall = 3); format(123456, scientific = TRUE); format(3.14159, decimal.mark = ",")
+      assert Labels.format([0.1], nsmall: 3) == ["0.100"]
+      assert Labels.format([123_456], scientific: true) == ["1.23456e+05"]
+      assert Labels.format([3.14159], decimal_mark: ",") == ["3,14159"]
+    end
+
+    test "refuses what is not a list of doubles, and options R does not take" do
+      for numbers <- ["1", [1, "2"], [:infinite]] do
+        assert_raise ArgumentError, ~r/Labels.format\/2 takes a list of numbers/, fn ->
+          Labels.format(numbers)
+        end
+      end
+
+      for options <- [[digits: 0], [digits: 23], [nsmall: 21], [scientific: :yes], [width: 3]] do
+        assert_raise NimbleOptions.ValidationError, fn -> Labels.format([1], options) end
+      end
+    end
+  end
 end

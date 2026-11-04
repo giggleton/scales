@@ -3,7 +3,8 @@ defmodule Scales.Labels do
   Labels for a scale's breaks: numbers written plainly (`plain/1`), in decimals (`number/2`),
   with a comma between thousands (`comma/2`), as percentages (`percent/2`), as amounts of money
   (`currency/2`), in scientific notation (`scientific/2`), in whichever way suits their size
-  (`number_auto/1`), as powers (`log/2`, or as text, `format_log/2`), as bytes (`bytes/2`), as
+  (`number_auto/1`), as R's `format()` writes them (`format/2`), as powers (`log/2`, or as
+  text, `format_log/2`), as bytes (`bytes/2`), as
   ordinals (`ordinal/2`), as p-values (`pvalue/2`), as spans of time (`timespan/2`), and dates,
   date-times and times of day in a format (`date/2`, `time/2`) or by what changed from the break
   before (`date_short/2`); and text broken into lines (`wrap/2`) or looked up in a dictionary
@@ -394,6 +395,35 @@ defmodule Scales.Labels do
                       doc:
                         ~s(`true` writes the prefixes `{"p<", "p=", "p>"}`; not taken with ) <>
                           "`prefix:`."
+                    ]
+                  )
+
+  @format_options NimbleOptions.new!(
+                    digits: [
+                      type: {:in, 1..22},
+                      default: 7,
+                      doc:
+                        "The significant digits shown of the number that needs the most, " <>
+                          "from 1 to 22, R's `digits`."
+                    ],
+                    nsmall: [
+                      type: {:in, 0..20},
+                      default: 0,
+                      doc: "The fewest decimals written in plain decimals, from 0 to 20."
+                    ],
+                    scientific: [
+                      type: {:in, [:auto, true, false]},
+                      default: :auto,
+                      doc:
+                        "`true` writes scientific notation, `false` plain decimals, and " <>
+                          "`:auto` whichever is narrower, plain decimals on a tie."
+                    ],
+                    big_mark: Keyword.put(@formatter_options[:big_mark], :default, ""),
+                    decimal_mark: Keyword.put(@formatter_options[:decimal_mark], :default, "."),
+                    trim: [
+                      type: :boolean,
+                      default: false,
+                      doc: "`false` pads each number on the left with spaces to the widest."
                     ]
                   )
 
@@ -849,6 +879,62 @@ defmodule Scales.Labels do
       :whole -> number(values, accuracy: 1)
       :together -> Format.write(values, format_settings(@format_digits, :auto, "."))
     end
+  end
+
+  @doc """
+  Writes numbers together as R's `format()` writes a vector of them: in one notation and one
+  count of decimals, showing up to `digits:` significant digits of the number that needs the
+  most, its zeros after its last significant digit dropped, in plain decimals or in scientific
+  notation, whichever is narrower unless `scientific:` says which, and padded to a common width
+  unless `trim:` is set. A missing number is written `NA`, and `:nan`, `:infinity` and
+  `:neg_infinity` as `NaN`, `Inf` and `-Inf`, as R writes them; R's `width`, `justify` and
+  `na.encode` are not taken.
+
+  ## Options
+
+  #{NimbleOptions.docs(@format_options)}
+
+  ## Examples
+
+      iex> Scales.Labels.format([0.5, 2], digits: 3, trim: true)
+      ["0.5", "2.0"]
+
+      iex> Scales.Labels.format([1.0e-6, 2.0e-6], digits: 3, trim: true)
+      ["1e-06", "2e-06"]
+
+      iex> Scales.Labels.format([1, nil, :nan, :infinity])
+      ["  1", " NA", "NaN", "Inf"]
+
+      iex> Scales.Labels.format([1.0e-5, 123], scientific: false)
+      ["  0.00001", "123.00000"]
+
+      iex> Scales.Labels.format([1_234_567.891], big_mark: ",")
+      ["1,234,568"]
+  """
+  @spec format([Scales.double()], keyword()) :: [String.t()]
+  def format(numbers, options \\ []) do
+    settings =
+      options
+      |> NimbleOptions.validate!(@format_options)
+      |> Map.new()
+
+    notation =
+      case settings.scientific do
+        :auto -> :auto
+        true -> :scientific
+        false -> :fixed
+      end
+
+    numbers
+    |> doubles!("Labels.format/2")
+    |> Format.write(%{
+      digits: settings.digits,
+      nsmall: settings.nsmall,
+      notation: notation,
+      big_mark: settings.big_mark,
+      decimal_mark: settings.decimal_mark,
+      trim: settings.trim
+    })
   end
 
   @doc """
@@ -1660,6 +1746,27 @@ defmodule Scales.Labels do
   defp numbers!(breaks, function) do
     raise ArgumentError, "#{function} takes a list of numbers and nils, got: #{inspect(breaks)}"
   end
+
+  # The doubles, each a float, `nil` or not finite, as R holds them.
+  defp doubles!(numbers, function) when is_list(numbers) do
+    if Enum.all?(numbers, &double?/1) do
+      Enum.map(numbers, &double/1)
+    else
+      raise ArgumentError, doubles_message(numbers, function)
+    end
+  end
+
+  defp doubles!(numbers, function), do: raise(ArgumentError, doubles_message(numbers, function))
+
+  defp double?(value), do: is_number(value) or value in [nil, :nan, :infinity, :neg_infinity]
+
+  defp double(value) when is_number(value), do: :erlang.float(value) + 0.0
+  defp double(value), do: value
+
+  defp doubles_message(numbers, function),
+    do:
+      "#{function} takes a list of numbers, nils, :nan, :infinity and :neg_infinity, " <>
+        "got: #{inspect(numbers)}"
 
   # The labels, each valid UTF-8 or a missing one, `nil`.
   defp texts!(labels, function) when is_list(labels) do

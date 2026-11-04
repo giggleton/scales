@@ -40,7 +40,7 @@ and "`wrap/2` takes"; why `dictionary/2` matches and takes what it does: "`dicti
 ## Rules
 
 - **Every label of `number/2`, `comma/2`, `percent/2`, `currency/2`, `scientific/2`,
-  `number_auto/1`, `log/2`, `format_log/2`, `bytes/2`, `ordinal/2`, `pvalue/2` and `timespan/2`
+  `number_auto/1`, `format/2`, `log/2`, `format_log/2`, `bytes/2`, `ordinal/2`, `pvalue/2` and `timespan/2`
   is R's to the character, and the tests pin R's own output**, each beside the R call that gave
   it (`giggly-r:ggplot2-4.0.3`). A label that differs from R's is a bug, except where the module
   comments say this differs, and say why: plain bytes `B` under binary units, and an ordinal's

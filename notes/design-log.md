@@ -75,16 +75,25 @@ deleted from the entry it was in, never marked superseded; git history keeps eve
   *Rejected: everything left in Giggly's*: the package's decisions unreadable from its own
   repository.
 - **The package keeps `use Boundary`, and its one boundary exports every module (2026-11-02,
-  Steve: "Yes"; `exports: :all` 2026-11-03, Steve: "Yes", released as 0.1.1).** `{:boundary,
+  Steve: "Yes"; `exports: :all` 2026-11-03, Steve: "Yes", released in 0.2.0).** `{:boundary,
   "~> 0.11", runtime: false}` is compiled by a user's project, never started and out of a
   release, with no dependencies of its own; Giggly and Pica list it already. It holds the
   package's own calls out to its `deps:`. Boundary also holds a caller that runs it to a
   dependency's exports, and a library marks what is API by its documentation, `@moduledoc false`
   and private functions, not by policing its callers; 0.1.0's list of six left out the
   documented `Scales.Breaks`, so a caller's boundaries refused calls its documentation offered, a
-  bug, hence a patch. *Rejected: dropping the declarations*: the same to callers, but the
+  bug, a patch on its own, released in 0.2.0 beside `format/2` (the entry beginning
+  "`Scales.Labels.format/2` is R's `format()`"). *Rejected: dropping the declarations*: the same to callers, but the
   package's own `deps:` unchecked. *Rejected: adding `Breaks` and `MinorBreaks` to the list*: it
   fixes today's call and keeps a second statement of the API that can drift from the first.
+- **`Scales.Labels.format/2` is R's `format()` of a numeric vector, public, and with it the
+  package is 0.2.0 (2026-11-03, Steve: "just make the scales function public").** Giggly's filled
+  contours label their bands as ggplot2 does, `format(digits = 3, trim = TRUE)`, which the
+  labellers already reach through the internal `Scales.Labels.Format`; `format/2` hands it R's
+  `digits`, `nsmall`, `scientific`, `big.mark`, `decimal.mark` and `trim`, a missing number `NA`
+  as R writes it. A new public function is a minor version. *Rejected: Giggly building it from
+  `number/2` and `scientific/2` and R's width rule*, a second home for that rule. *Rejected:
+  Giggly calling `Scales.Labels.Format`*, an internal module whose shape is the package's own.
 - **The package's metadata (2026-11-02, Steve: "Yes").** `:scales` 0.1.0, `elixir: "~> 1.20"`,
   `giggleton/scales`, MIT; `THIRD_PARTY_NOTICES.md` carries ColorBrewer's copyright with Apache
   2.0's text and viridisLite's MIT notice, since the palettes ship in `priv/`; `color` pinned to
