@@ -1677,6 +1677,16 @@ defmodule Scales.LabelsTest do
       assert Labels.format([3.14159], decimal_mark: ",") == ["3,14159"]
     end
 
+    test "takes digits from 1 to 22, 7 when not given, nsmall up to 20, and minus infinity" do
+      # format(3.14159, digits = 1); format(pi, digits = 22); format(pi)
+      assert Labels.format([3.14159], digits: 1) == ["3"]
+      assert Labels.format([:math.pi()], digits: 22) == ["3.141592653589793115998"]
+      assert Labels.format([:math.pi()]) == ["3.141593"]
+      # format(0.1, nsmall = 20); format(c(-Inf, 1))
+      assert Labels.format([0.1], nsmall: 20) == ["0.10000000000000000555"]
+      assert Labels.format([:neg_infinity, 1]) == ["-Inf", "   1"]
+    end
+
     test "refuses what is not a list of doubles, and options R does not take" do
       for numbers <- ["1", [1, "2"], [:infinite]] do
         assert_raise ArgumentError, ~r/Labels.format\/2 takes a list of numbers/, fn ->
@@ -1684,7 +1694,14 @@ defmodule Scales.LabelsTest do
         end
       end
 
-      for options <- [[digits: 0], [digits: 23], [nsmall: 21], [scientific: :yes], [width: 3]] do
+      for options <- [
+            [digits: 0],
+            [digits: 23],
+            [nsmall: -1],
+            [nsmall: 21],
+            [scientific: :yes],
+            [width: 3]
+          ] do
         assert_raise NimbleOptions.ValidationError, fn -> Labels.format([1], options) end
       end
     end
