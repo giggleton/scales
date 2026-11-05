@@ -398,6 +398,13 @@ defmodule Scales.MinorBreaksTest do
 
       assert_raise ArgumentError, ~r/not both 0/, fn -> MinorBreaks.log_detailed({0.0, 0.0}) end
     end
+
+    test "limits that are not numbers are refused, either end" do
+      # Built as the test runs: a literal the guard refuses fails the type checker.
+      for limits <- [List.to_tuple([:neg_infinity, 10.0]), List.to_tuple([1.0, :infinity])] do
+        assert_raise FunctionClauseError, fn -> MinorBreaks.log_detailed(limits) end
+      end
+    end
   end
 
   defp new_york(naive), do: DateTime.from_naive!(naive, "America/New_York", Tz.TimeZoneDatabase)
