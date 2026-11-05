@@ -7,7 +7,9 @@ defmodule Scales.MinorBreaksTest do
   # 35), 2)`, scales 1.4.0; the others are R's `minor_breaks_n(3)(c(0.5, 9.5), c(2, 4, 6, 8))`,
   # `minor_breaks_width(2, 0.5)` and `minor_breaks_width("1 week", 0)` on those limits and breaks
   # and on `c(2026-01-01, 2026-01-25)` with the break 2026-01-15, `minor_breaks_log(5)(c(1, 100))`
-  # and `minor_breaks_log(10, 1)(c(-10, 10))`. Every figure below is R's own output.
+  # and `minor_breaks_log(10, 1)(c(-10, 10))`, and `log_detailed/2`'s R's `minor_breaks_log(5)(c(1,
+  # 10))` and `minor_breaks_log(10, 1)(c(-1, 1))` with their `detail` attributes. Every figure
+  # below is R's own output.
   doctest Scales.MinorBreaks
 
   describe "regular/3" do
@@ -352,6 +354,49 @@ defmodule Scales.MinorBreaksTest do
       # Built as the test runs: a literal the guard refuses fails the type checker.
       limits = List.to_tuple([:neg_infinity, 10.0])
       assert_raise FunctionClauseError, fn -> MinorBreaks.log(limits) end
+    end
+  end
+
+  describe "log_detailed/2" do
+    test "each value carries R's detail, its powers 10, their fives 5 and the rest 1" do
+      # R's `attr(minor_breaks_log(...)(limits), "detail")` is `rep(c(10, 5, 1), counts)`: the
+      # counts of tens, fives and ones R gives for each call.
+      for {limits, options, counts} <- [
+            {{1.0, 100.0}, [], {5, 5, 35}},
+            {{1.0, 1.0e10}, [], {13, 13, 0}},
+            {{1.0, 1.0e16}, [], {19, 0, 0}},
+            {{-10.0, 10.0}, [], {9, 8, 56}},
+            {{0.0, 5.0}, [], {9, 8, 56}},
+            {{-20.0, 5.0}, [detail: 1, smallest: 1], {9, 8, 56}}
+          ] do
+        {tens, fives, ones} = counts
+
+        expected =
+          Enum.concat([
+            List.duplicate(10, tens),
+            List.duplicate(5, fives),
+            List.duplicate(1, ones)
+          ])
+
+        detailed = MinorBreaks.log_detailed(limits, options)
+        assert Enum.map(detailed, fn {_value, detail} -> detail end) == expected
+
+        assert Enum.map(detailed, fn {value, _detail} -> value end) ==
+                 MinorBreaks.log(limits, options)
+      end
+    end
+
+    test "0 among limits reaching 0 or below is a power's" do
+      # R's `minor_breaks_log(1, 1)(c(-20, 5))`: 0 is the ninth value, of detail 10.
+      assert {0.0, 10} in MinorBreaks.log_detailed({-20.0, 5.0}, detail: 1, smallest: 1)
+    end
+
+    test "its options are refused as log/2's are" do
+      assert_raise NimbleOptions.ValidationError, fn ->
+        MinorBreaks.log_detailed({1.0, 10.0}, detail: 2)
+      end
+
+      assert_raise ArgumentError, ~r/not both 0/, fn -> MinorBreaks.log_detailed({0.0, 0.0}) end
     end
   end
 

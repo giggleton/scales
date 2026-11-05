@@ -46,6 +46,15 @@ stops the question being reopened from scratch. A new entry is about 150 words: 
 sentence or two of why, and one line per rejected alternative. What a later decision replaces is
 deleted from the entry it was in, never marked superseded; git history keeps every version.
 
+- **A logarithmic axis's minor breaks come with R's `detail` beside each value, from
+  `MinorBreaks.log_detailed/2` (2026-11-04, Steve: "Yes", for Giggly's `guide_axis_logticks()`;
+  checked against scales 1.4.0).** It gives `log/2`'s values in R's order, each `{value, 10 | 5 |
+  1}`, R's attribute `rep(c(10, 5, 1), lengths)`: a power of ten (and 0, among limits reaching 0
+  or below), five times one, any other multiple. `log/2` is rebuilt on it, so which ladder a value
+  came from has one home. In 0.2.0. *Rejected: a caller sorting `log/2`'s values by calling it
+  again with `detail: 10` and `5`*: it leans on powers bit-equal across calls, which nothing
+  promises. *Rejected: a `tagged:` option on `log/2`, or the pairs from `log/2` itself*: a return
+  type an option chooses, and `log/2` would stop serving as a scale's minor breaks.
 - **The package was complete when it was carved out of Giggly (2026-11-02, Steve: "Agree").**
   Checked against all 213 exports of scales 1.4.0's NAMESPACE: every current one built,
   superseded, or left out by an increment's agreed list; the 2026-10-27 not-wanted list confirmed
@@ -666,8 +675,7 @@ deleted from the entry it was in, never marked superseded; git history keeps eve
   `width/4` gives what `Breaks.width/3` gives, `Date`s for dates, and `n/3` refuses dates, as a
   fraction of a day is no date. `width/4`'s `offset:` defaults to 0, where R has no default.
   *Rejected: both on numbers alone*: R's route works on no date axis, but a width's dates cost
-  nothing and serve another tool. *Rejected: `minor_breaks_log()`'s `detail` attribute*: it
-  waits for `guide_axis_logticks()`.
+  nothing and serve another tool.
 
 - **Breaks for a log, exponential or timespan axis are R's, whole, and extended breaks take
   labeling's `only.loose` and `w` (2026-10-29, Steve, increment 2's step 2; checked against scales

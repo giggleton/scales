@@ -356,7 +356,8 @@ the entry beginning "Axes are drawn"; why minor breaks are R's regular ones: the
   refused, where R fails. **A logarithmic axis's are exactly R's `minor_breaks_log()`**
   (`MinorBreaks.log/2`): R's values in R's order, the multiples 2 to 9 but 5 standing for R's
   `setdiff()`, which removes only the powers and their fives; limits both 0 refused, where R
-  fails; the `detail` attribute left out. Their tests pin R's figures; all of 4,000 numeric, 2,000
+  fails; R's `detail` attribute, which of the powers, their fives and the other multiples a
+  value is, given beside each value by `MinorBreaks.log_detailed/2`, which `log/2` drops. Their tests pin R's figures; all of 4,000 numeric, 2,000
   date, 1,712 date-time and 4,014 log cases matched R, and 1,495 times but where R's `hms` runs
   past midnight.
 - **A number of breaks wanted, `n:`, reaches every transformation's own breaks but time's and a

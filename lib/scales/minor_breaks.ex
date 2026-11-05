@@ -2,7 +2,8 @@ defmodule Scales.MinorBreaks do
   @moduledoc """
   Where a continuous axis's minor breaks go: between its breaks (`regular/3`), a number of them to
   each gap (`n/3`) or every multiple of a width in each (`width/4`), and the powers of ten and
-  their multiples for a logarithmic axis (`log/2`).
+  their multiples for a logarithmic axis (`log/2`, and `log_detailed/2` saying which of those
+  each is).
   """
 
   # R's `scales::regular_minor_breaks()`, which a transformation carries as its `minor_breaks` and
@@ -163,12 +164,38 @@ defmodule Scales.MinorBreaks do
   """
   @spec log({number(), number()}, keyword()) :: [float()]
   def log({low, high}, options \\ []) when is_number(low) and is_number(high) do
+    {low, high}
+    |> log_detailed(options)
+    |> Enum.map(fn {value, _detail} -> value end)
+  end
+
+  @doc """
+  The values `log/2` gives, in the same order, each with the detail it belongs to, R's
+  `minor_breaks_log()`'s `detail` attribute: `10` for a power of ten, and 0 where the limits
+  reach 0 or below; `5` for five times one; `1` for any other whole multiple of one. Its options
+  are `log/2`'s.
+
+  ## Examples
+
+      iex> Scales.MinorBreaks.log_detailed({1.0, 10.0}, detail: 5)
+      [{0.1, 10}, {1.0, 10}, {10.0, 10}, {100.0, 10}, {0.5, 5}, {5.0, 5}, {50.0, 5}, {500.0, 5}]
+
+      iex> Scales.MinorBreaks.log_detailed({-1.0, 1.0}, detail: 10, smallest: 1)
+      [{1.0, 10}, {10.0, 10}, {100.0, 10}, {-1.0, 10}, {-10.0, 10}, {-100.0, 10}, {0.0, 10}]
+  """
+  @spec log_detailed({number(), number()}, keyword()) :: [{float(), 1 | 5 | 10}]
+  def log_detailed({low, high}, options \\ []) when is_number(low) and is_number(high) do
     %{detail: detail, smallest: smallest} =
       options
       |> NimbleOptions.validate!(@log_options)
       |> Map.new()
 
-    log_breaks({low, high}, detail, smallest)
+    {low, high}
+    |> log_breaks(detail, smallest)
+    |> Enum.zip_with([10, 5, 1], fn values, value_detail ->
+      Enum.map(values, fn value -> {value, value_detail} end)
+    end)
+    |> Enum.concat()
   end
 
   @doc false
@@ -228,12 +255,10 @@ defmodule Scales.MinorBreaks do
   defp unique(value) when is_float(value), do: value + 0.0
   defp unique(value), do: value
 
-  # R's `minor_breaks_log()` on limits both positive, or reaching 0 or below.
-  defp log_breaks({low, high}, detail, _smallest) when low > 0 and high > 0 do
-    {low, high}
-    |> ladder(detail)
-    |> Enum.concat()
-  end
+  # R's `minor_breaks_log()` on limits both positive, or reaching 0 or below: its tens, fives
+  # and ones, in that order.
+  defp log_breaks({low, high}, detail, _smallest) when low > 0 and high > 0,
+    do: ladder({low, high}, detail)
 
   defp log_breaks({low, high} = limits, detail, smallest) do
     large = max(abs(low), abs(high))
@@ -247,7 +272,12 @@ defmodule Scales.MinorBreaks do
     small = if smallest == :auto, do: min(0.1, large * 0.1), else: smallest
     [tens, fives, ones] = ladder({small * 10, large}, detail)
 
-    Enum.concat([mirrored(tens, small), [0.0], mirrored(fives, small), mirrored(ones, small)])
+    powers =
+      tens
+      |> mirrored(small)
+      |> Enum.concat([0.0])
+
+    [powers, mirrored(fives, small), mirrored(ones, small)]
   end
 
   # The powers of ten over the limits, a power either side, then five times each and the other
