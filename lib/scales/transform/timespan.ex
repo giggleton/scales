@@ -47,6 +47,11 @@ defmodule Scales.Transform.Timespan do
   end
 
   @impl Scales.Transform
+  def data_breaks(transformation, extent, []) do
+    inverse(transformation, breaks(transformation, extent, []))
+  end
+
+  @impl Scales.Transform
   def minor_breaks(_transformation, breaks, extent), do: MinorBreaks.regular(breaks, extent)
 
   @impl Scales.Transform

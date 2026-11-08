@@ -75,12 +75,10 @@ defmodule Scales.Transform.Probability do
   end
 
   @impl Scales.Transform
-  def breaks(transformation, {low, high}, options) do
+  def data_breaks(transformation, {low, high}, options) do
     parameters = parameters(transformation)
 
-    {distribution(low, parameters), distribution(high, parameters)}
-    |> Breaks.extended(options)
-    |> Enum.map(fn break -> quantile(break, parameters) end)
+    Breaks.extended({distribution(low, parameters), distribution(high, parameters)}, options)
   end
 
   @impl Scales.Transform

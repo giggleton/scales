@@ -77,7 +77,7 @@ defmodule Scales.Transform.Exp do
   # The extent's ends turned back, an end at zero or below dropped, as R's `extended_breaks()`
   # drops its NaN and minus infinity.
   @impl Scales.Transform
-  def breaks(transformation, {low, high}, options) do
+  def data_breaks(transformation, {low, high}, options) do
     base = base(transformation)
 
     [low, high]
@@ -85,7 +85,6 @@ defmodule Scales.Transform.Exp do
     |> Enum.filter(&is_number/1)
     |> Enum.min_max()
     |> Breaks.extended(options)
-    |> Enum.map(fn break -> Double.power(base, break) end)
   end
 
   @impl Scales.Transform

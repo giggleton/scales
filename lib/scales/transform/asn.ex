@@ -54,10 +54,8 @@ defmodule Scales.Transform.Asn do
   end
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
-    {sine_of_half_squared(low), sine_of_half_squared(high)}
-    |> Breaks.extended(options)
-    |> Enum.map(&arc_sine_square_root/1)
+  def data_breaks(_transformation, {low, high}, options) do
+    Breaks.extended({sine_of_half_squared(low), sine_of_half_squared(high)}, options)
   end
 
   @impl Scales.Transform

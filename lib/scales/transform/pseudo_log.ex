@@ -80,12 +80,13 @@ defmodule Scales.Transform.PseudoLog do
   end
 
   @impl Scales.Transform
-  def breaks(transformation, {low, high}, options) do
+  def data_breaks(transformation, {low, high}, options) do
     parameters = parameters(transformation)
 
-    {inverse_pseudo_logarithm(low, parameters), inverse_pseudo_logarithm(high, parameters)}
-    |> Breaks.extended(options)
-    |> Enum.map(fn break -> pseudo_logarithm(break, parameters) end)
+    Breaks.extended(
+      {inverse_pseudo_logarithm(low, parameters), inverse_pseudo_logarithm(high, parameters)},
+      options
+    )
   end
 
   @impl Scales.Transform

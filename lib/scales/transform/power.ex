@@ -96,22 +96,6 @@ defmodule Scales.Transform.Power do
   def missing_derivative(exponent) when exponent == 1, do: 1.0
   def missing_derivative(_exponent), do: nil
 
-  # The breaks of an axis showing `extent` in transformed space, through `inverse` and
-  # `transform` of one value each.
-  @doc false
-  @spec breaks(
-          {Scales.double(), Scales.double()},
-          (term() -> term()),
-          (term() -> term()),
-          keyword()
-        ) ::
-          [Scales.double()]
-  def breaks(extent, inverse, transform, options) do
-    extent
-    |> data_breaks(inverse, options)
-    |> Enum.map(transform)
-  end
-
   # The labels of `breaks`, each from the break in data units it was found from on `extent`, or,
   # for breaks given or found elsewhere, turned back and rounded.
   @doc false
@@ -146,9 +130,13 @@ defmodule Scales.Transform.Power do
     |> Labels.plain_round_tripped()
   end
 
-  # Extended breaks on the extent turned back into data units, an end that turns back to
-  # anything but a number set aside, so one alone gives R's breaks on it and none gives none.
-  defp data_breaks({low, high}, inverse, options) do
+  # Extended breaks of an axis showing `extent` in transformed space, in data units: on the
+  # extent turned back through `inverse`, of one value, an end that turns back to anything but a
+  # number set aside, so one alone gives R's breaks on it and none gives none.
+  @doc false
+  @spec data_breaks({Scales.double(), Scales.double()}, (term() -> term()), keyword()) ::
+          [Scales.double()]
+  def data_breaks({low, high}, inverse, options) do
     case Enum.filter([inverse.(low), inverse.(high)], &is_number/1) do
       [] ->
         []

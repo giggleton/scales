@@ -50,10 +50,8 @@ defmodule Scales.Transform.Asinh do
   end
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
-    {Double.hyperbolic_sine(low), Double.hyperbolic_sine(high)}
-    |> Breaks.extended(options)
-    |> Enum.map(&Double.inverse_hyperbolic_sine/1)
+  def data_breaks(_transformation, {low, high}, options) do
+    Breaks.extended({Double.hyperbolic_sine(low), Double.hyperbolic_sine(high)}, options)
   end
 
   @impl Scales.Transform

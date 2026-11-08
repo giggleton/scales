@@ -48,7 +48,7 @@ defmodule Scales.Transform.Custom do
   end
 
   @impl Scales.Transform
-  def breaks(%Transform{breaks: breaks} = transformation, {low, high}, options) do
+  def data_breaks(%Transform{breaks: breaks} = transformation, {low, high}, options) do
     counted!(transformation, options)
 
     turned_back = inverse(transformation, [low, high])
@@ -59,8 +59,7 @@ defmodule Scales.Transform.Custom do
 
       ends ->
         limits = Enum.min_max(ends)
-        found = if is_function(breaks, 2), do: breaks.(limits, options), else: breaks.(limits)
-        transform(transformation, found)
+        if is_function(breaks, 2), do: breaks.(limits, options), else: breaks.(limits)
     end
   end
 

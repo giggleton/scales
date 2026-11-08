@@ -68,13 +68,12 @@ defmodule Scales.Transform.Modulus do
   end
 
   @impl Scales.Transform
-  def breaks(transformation, extent, options) do
+  def data_breaks(transformation, extent, options) do
     {exponent, offset} = parameters(transformation)
 
-    Power.breaks(
+    Power.data_breaks(
       extent,
       fn position -> inverse_modulus(position, exponent, offset) end,
-      fn value -> modulus(value, exponent, offset) end,
       options
     )
   end

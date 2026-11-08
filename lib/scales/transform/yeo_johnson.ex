@@ -71,11 +71,10 @@ defmodule Scales.Transform.YeoJohnson do
   end
 
   @impl Scales.Transform
-  def breaks({:yj, exponent}, extent, options) do
-    Power.breaks(
+  def data_breaks({:yj, exponent}, extent, options) do
+    Power.data_breaks(
       extent,
       fn position -> inverse_yeo_johnson(position, exponent) end,
-      fn value -> yeo_johnson(value, exponent) end,
       options
     )
   end

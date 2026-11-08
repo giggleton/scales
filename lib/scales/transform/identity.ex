@@ -28,7 +28,7 @@ defmodule Scales.Transform.Identity do
   def domain(_transformation), do: {:neg_infinity, :infinity}
 
   @impl Scales.Transform
-  def breaks(_transformation, extent, options), do: Breaks.extended(extent, options)
+  def data_breaks(_transformation, extent, options), do: Breaks.extended(extent, options)
 
   @impl Scales.Transform
   def derivative(_transformation, values), do: Enum.map(values, fn _value -> 1.0 end)

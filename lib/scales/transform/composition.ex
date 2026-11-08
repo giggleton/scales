@@ -102,6 +102,12 @@ defmodule Scales.Transform.Composition do
   end
 
   @impl Scales.Transform
+  def data_breaks({:compose, [first | rest]}, extent, options) do
+    squished = Transform.squish(first, into_first(rest, extent))
+    Transform.data_breaks(first, squished, options)
+  end
+
+  @impl Scales.Transform
   def minor_breaks(_composition, breaks, extent), do: MinorBreaks.regular(breaks, extent)
 
   @impl Scales.Transform

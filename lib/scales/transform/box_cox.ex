@@ -62,13 +62,12 @@ defmodule Scales.Transform.BoxCox do
   end
 
   @impl Scales.Transform
-  def breaks(transformation, extent, options) do
+  def data_breaks(transformation, extent, options) do
     {exponent, offset} = parameters(transformation)
 
-    Power.breaks(
+    Power.data_breaks(
       extent,
       fn position -> inverse_box_cox(position, exponent, offset) end,
-      fn value -> box_cox(value, exponent, offset) end,
       options
     )
   end

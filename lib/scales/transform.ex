@@ -348,13 +348,27 @@ defmodule Scales.Transform do
   @doc false
   @callback domain(transformation :: name()) :: Scales.Bounds.range()
 
-  # The breaks of an axis showing `extent`, in transformed space, in the transformation's order;
-  # some may fall outside it, a break at an end of a domain the transformation takes to an
-  # infinity, logit's 0 and 1, there, as R's. `options` are `breaks/3`'s, validated, and always
-  # `[]` for the time and span of time transformations, which count no breaks.
+  # The breaks of an axis showing `extent`, in data units, in the transformation's order, as R's
+  # `transformation$breaks()` finds them on the extent turned back; some may fall outside it, or
+  # at an end of a domain the transformation takes to an infinity, logit's 0 and 1. `options` are
+  # `breaks/3`'s, validated, and always `[]` for the span of time transformation, which counts no
+  # breaks. Every transformation of numbers has them.
+  @doc false
+  @callback data_breaks(
+              transformation :: name(),
+              extent :: {float(), float()},
+              options :: keyword()
+            ) :: [number()]
+
+  # The breaks of an axis showing `extent`, in transformed space, `breaks/3`'s: of a date, date-time
+  # or time transformation, whose data units are not numbers; of the span of time one, whose
+  # breaks are found in seconds, its transformed space; and of a composition, whose first part
+  # decides. Every other transformation's are its data breaks transformed.
   @doc false
   @callback breaks(transformation :: name(), extent :: {float(), float()}, options :: keyword()) ::
               [break()]
+
+  @optional_callbacks data_breaks: 3, breaks: 3
 
   # The minor breaks between `breaks` on an axis showing `extent`; the breaks themselves may be
   # among them, and some may fall outside the extent.
@@ -620,7 +634,53 @@ defmodule Scales.Transform do
   @spec breaks(name(), {float(), float()}, keyword()) :: [break()]
   def breaks(name, extent, options \\ []) do
     validated = counted!(name, options)
-    module(name).breaks(name, extent, validated)
+    found_breaks(name, extent, validated)
+  end
+
+  # A transformation's breaks: its own where its data units are not numbers, its breaks are found
+  # in transformed space, or it is a composition; otherwise its data breaks transformed, as R's
+  # scales transform `transformation$breaks()`.
+  defp found_breaks({:compose, _parts} = name, extent, options),
+    do: module(name).breaks(name, extent, options)
+
+  defp found_breaks(name, extent, options) when is_temporal(name) or is_timespan(name),
+    do: module(name).breaks(name, extent, options)
+
+  defp found_breaks(name, extent, options),
+    do: transform(name, module(name).data_breaks(name, extent, options))
+
+  @doc """
+  The default breaks of an axis showing `extent`, in transformed space, under the
+  transformation `name`, in data units: `breaks/3`'s before they are transformed, as R's
+  `transformation$breaks()` finds them on the extent turned back, so a break is exactly the
+  number found there, where turning `breaks/3`'s back can move it in its last digits. In the order the
+  transformation leaves them, some outside the extent, logit's 0 and 1 among them. The span of
+  time transformation's are its breaks in seconds turned back into its unit. A date, date-time
+  or time transformation, alone or first in a composition, has none, its data units not numbers,
+  and raises `FunctionClauseError`.
+
+  ## Options
+
+  `breaks/3`'s.
+
+  ## Examples
+
+      iex> Scales.Transform.data_breaks(:log10, {:math.log10(52), :math.log10(335)})
+      [50.0, 100.0, 200.0, 300.0, 500.0]
+
+      iex> extent = {:math.sqrt(5), :math.sqrt(40)}
+      iex> Scales.Transform.data_breaks(:sqrt, extent)
+      [0.0, 10.0, 20.0, 30.0, 40.0]
+      iex> Scales.Transform.inverse(:sqrt, Scales.Transform.breaks(:sqrt, extent))
+      [0.0, 10.000000000000002, 20.000000000000004, 30.0, 40.00000000000001]
+
+      iex> Scales.Transform.data_breaks({:timespan, :minute}, {0.0, 360.0})
+      [0.0, 1.5, 3.0, 4.5, 6.0]
+  """
+  @spec data_breaks(name(), {float(), float()}, keyword()) :: [number()]
+  def data_breaks(name, extent, options \\ []) when not is_temporal(name) do
+    validated = counted!(name, options)
+    module(name).data_breaks(name, extent, validated)
   end
 
   # The options validated, but for the time and span of time transformations, which count no

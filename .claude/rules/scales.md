@@ -176,7 +176,8 @@ the entry beginning "Axes are drawn"; why minor breaks are R's regular ones: the
   ends (log10 from -100, sqrt from 0, exp from 0, yj(-1) at 1, the bound its values never pass),
   a transformed domain of no width or one end squishing nothing, a date's, date-time's or time's
   never squished, turned back into data
-  units, broken there, and transformed back, **in the order that leaves them**, so reverse's and
+  units, broken there (`Transform.data_breaks/3` gives them so, exact; design-log §4, the entry
+  beginning "`Transform.data_breaks/3`"), and transformed back, **in the order that leaves them**, so reverse's and
   reciprocal's descend, as R draws them; labels are written, and a labels function handed, the
   breaks turned back, as R turns them (`10^x`, `x * x`). **A domain is held in data units, as
   R's `domain`** (log10's from 1e-100). **A value outside the domain is R's**: log10 places 0 at

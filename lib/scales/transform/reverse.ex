@@ -30,12 +30,11 @@ defmodule Scales.Transform.Reverse do
   def inverse_derivative(transformation, positions), do: derivative(transformation, positions)
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
+  def data_breaks(_transformation, {low, high}, options) do
     [low, high]
     |> Enum.map(&negated/1)
     |> Enum.min_max()
     |> Breaks.extended(options)
-    |> Enum.map(&negated/1)
   end
 
   @impl Scales.Transform

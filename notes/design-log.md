@@ -46,6 +46,18 @@ stops the question being reopened from scratch. A new entry is about 150 words: 
 sentence or two of why, and one line per rejected alternative. What a later decision replaces is
 deleted from the entry it was in, never marked superseded; git history keeps every version.
 
+- **`Transform.data_breaks/3` gives a transformation's breaks in data units, `breaks/3`'s
+  before they are transformed (2026-11-07, Steve: "that's fine", then "a", for Giggly's binned
+  scales; checked against scales 1.4.0).** R's `transformation$breaks()` finds them on the
+  extent turned back, and ggplot2's binned scale compares and widens them there; turned back,
+  `breaks/3`'s move in their last digits (sqrt on 5 to 40: 40.00000000000001), so a break R
+  holds exactly would drift. It takes `breaks/3`'s arguments, the extent in transformed space,
+  so each transformation keeps its own handling of an end that turns back to no number; every
+  transformation of numbers has it, and `breaks/3` is it transformed, but for a span of time,
+  found in seconds, and a composition, whose first part decides; a date's, date-time's or time's
+  raises. In 0.2.0. *Rejected: R's shape, limits in data units*: each caller turns its limits
+  back and handles the ends. *Rejected: a `units:` option on `breaks/3`*: a return an option
+  chooses. *Rejected: Giggly choosing each transformation's breaker*: this knowledge twice.
 - **A logarithmic axis's minor breaks come with R's `detail` beside each value, from
   `MinorBreaks.log_detailed/2` (2026-11-04, Steve: "Yes", for Giggly's `guide_axis_logticks()`;
   checked against scales 1.4.0).** It gives `log/2`'s values in R's order, each `{value, 10 | 5 |

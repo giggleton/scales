@@ -73,14 +73,12 @@ defmodule Scales.Transform.Log do
     end)
   end
 
-  # The breaks found on the extent in data units, then put back into log space.
+  # The breaks found on the extent in data units.
   @impl Scales.Transform
-  def breaks(transformation, {low, high}, options) do
+  def data_breaks(transformation, {low, high}, options) do
     base = base(transformation)
 
-    {Double.power(base, low), Double.power(base, high)}
-    |> Breaks.log([{:base, base} | options])
-    |> Enum.map(fn break -> logarithm(break, base) end)
+    Breaks.log({Double.power(base, low), Double.power(base, high)}, [{:base, base} | options])
   end
 
   @impl Scales.Transform

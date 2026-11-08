@@ -37,13 +37,12 @@ defmodule Scales.Transform.Reciprocal do
   def inverse_derivative(transformation, positions), do: derivative(transformation, positions)
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
+  def data_breaks(_transformation, {low, high}, options) do
     [low, high]
     |> Enum.map(&reciprocal/1)
     |> Enum.filter(&is_number/1)
     |> Enum.min_max()
     |> Breaks.extended(options)
-    |> Enum.map(&reciprocal/1)
   end
 
   @impl Scales.Transform

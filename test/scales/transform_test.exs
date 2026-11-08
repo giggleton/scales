@@ -1088,6 +1088,110 @@ defmodule Scales.TransformTest do
     end
   end
 
+  describe "data breaks" do
+    # Golden: R's `transformation$breaks(transformation$inverse(extent))`, scales 1.4.0, for the
+    # data's range in the comment above each, the extent that range transformed.
+    @data_breaks [
+      # c(52, 335)
+      {:identity, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {:log10, {52, 335}, [50.0, 100.0, 200.0, 300.0, 500.0]},
+      {:log2, {52, 335}, [32.0, 64.0, 128.0, 256.0, 512.0]},
+      {:log, {52, 335},
+       [
+         40.171073846375329,
+         54.598150033144229,
+         109.196300066288458,
+         148.413159102576572,
+         296.826318205153143,
+         403.428793492734997
+       ]},
+      {:reverse, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {:reciprocal, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {:log1p, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {:asinh, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {:pseudo_log, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {{:boxcox, 2}, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {{:modulus, 0.5}, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      {{:yj, 0.5}, {52, 335}, [50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0]},
+      # as.difftime(c(52, 335), units = "mins"), R's breaks turned into minutes
+      {{:timespan, :minute}, {52, 335}, [60.0, 120.0, 180.0, 240.0, 300.0, 360.0]},
+      # c(5, 40)
+      {:sqrt, {5, 40}, [0.0, 10.0, 20.0, 30.0, 40.0]},
+      # c(1, 5)
+      {:exp, {1, 5}, [1.0, 2.0, 3.0, 4.0, 5.0]},
+      # c(0.05, 0.95)
+      {:asn, {0.05, 0.95}, [0.0, 0.25, 0.5, 0.75, 1.0]},
+      {:atanh, {0.05, 0.95}, [0.0, 0.25, 0.5, 0.75, 1.0]},
+      {:logit, {0.05, 0.95}, [0.0, 0.25, 0.5, 0.75, 1.0]},
+      {:probit, {0.05, 0.95}, [0.0, 0.25, 0.5, 0.75, 1.0]}
+    ]
+
+    test "are R's breaks in data units, exactly, and breaks/3's are them transformed" do
+      for {transformation, {low, high}, expected} <- @data_breaks do
+        extent = transformed_extent(transformation, low, high)
+        found = Transform.data_breaks(transformation, extent)
+
+        assert {transformation, found} == {transformation, expected}
+
+        assert {transformation, Transform.transform(transformation, found)} ==
+                 {transformation, Transform.breaks(transformation, extent)}
+      end
+    end
+
+    test "are exact where breaks/3's turned back move in their last digits" do
+      extent = transformed_extent(:sqrt, 5, 40)
+
+      assert Transform.data_breaks(:sqrt, extent) == [0.0, 10.0, 20.0, 30.0, 40.0]
+
+      assert Transform.inverse(:sqrt, Transform.breaks(:sqrt, extent)) ==
+               [0.0, 10.000000000000002, 20.000000000000004, 30.0, 40.00000000000001]
+    end
+
+    test "take n:, as breaks/3 does, and a span of time refuses it" do
+      extent = transformed_extent(:log10, 52, 335)
+
+      # R's breaks(n = 10)
+      assert Transform.data_breaks(:log10, extent, n: 10) ==
+               [60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240.0, 270.0, 300.0, 330.0]
+
+      assert_raise ArgumentError, ~r/counts no breaks/, fn ->
+        Transform.data_breaks(:timespan, {0.0, 360.0}, n: 3)
+      end
+    end
+
+    test "a composition's are its first part's, a transformation of your own its function's" do
+      extent = transformed_extent({:compose, [:log10, :reverse]}, 52, 335)
+
+      assert Transform.data_breaks({:compose, [:log10, :reverse]}, extent) ==
+               [50.0, 100.0, 200.0, 300.0, 500.0]
+
+      own =
+        Transform.new("own",
+          transform: &:math.log/1,
+          inverse: &:math.exp/1,
+          domain: {1.0e-300, :infinity},
+          breaks: fn {_low, _high} -> [60, 120, 240] end
+        )
+
+      assert Transform.data_breaks(own, transformed_extent(own, 52, 335)) == [60, 120, 240]
+    end
+
+    test "a date, date-time or time transformation has none, its data units not numbers" do
+      for transformation <- [:date, :time, {:compose, [:date, :reverse]}] do
+        assert_raise FunctionClauseError, fn ->
+          Transform.data_breaks(transformation, {0.0, 10.0})
+        end
+      end
+    end
+  end
+
+  # The extent of data from `low` to `high` under `transformation`, low to high.
+  defp transformed_extent(transformation, low, high) do
+    transformation
+    |> Transform.transform([low, high])
+    |> Enum.min_max()
+  end
+
   describe "a base or a sigma" do
     # R takes a base below 1, falling, and gives garbage or fails at 1, 0, below 0 and NA; a sigma
     # below 0 flips the axis and 0 places every value at an infinity (`inc4/step3/params.R`).

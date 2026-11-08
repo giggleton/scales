@@ -57,10 +57,8 @@ defmodule Scales.Transform.Atanh do
   end
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
-    {Double.hyperbolic_tangent(low), Double.hyperbolic_tangent(high)}
-    |> Breaks.extended(options)
-    |> Enum.map(&Double.inverse_hyperbolic_tangent/1)
+  def data_breaks(_transformation, {low, high}, options) do
+    Breaks.extended({Double.hyperbolic_tangent(low), Double.hyperbolic_tangent(high)}, options)
   end
 
   @impl Scales.Transform

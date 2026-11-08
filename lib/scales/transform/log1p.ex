@@ -49,10 +49,11 @@ defmodule Scales.Transform.Log1p do
   end
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
-    {Double.exponential_minus_one(low), Double.exponential_minus_one(high)}
-    |> Breaks.extended(options)
-    |> Enum.map(&logarithm_of_one_plus/1)
+  def data_breaks(_transformation, {low, high}, options) do
+    Breaks.extended(
+      {Double.exponential_minus_one(low), Double.exponential_minus_one(high)},
+      options
+    )
   end
 
   @impl Scales.Transform

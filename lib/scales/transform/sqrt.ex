@@ -41,12 +41,11 @@ defmodule Scales.Transform.Sqrt do
   end
 
   @impl Scales.Transform
-  def breaks(_transformation, {low, high}, options) do
+  def data_breaks(_transformation, {low, high}, options) do
     [low, high]
     |> Enum.map(&squared/1)
     |> Enum.min_max()
     |> Breaks.extended(options)
-    |> Enum.map(&Double.square_root/1)
   end
 
   @impl Scales.Transform
