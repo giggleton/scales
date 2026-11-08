@@ -1032,6 +1032,13 @@ defmodule Scales.TransformTest do
                 [302_400.0, 907_200.0, 1_512_000.0]}
     end
 
+    # R: transform_timespan("days")$breaks() on 0 to 2 days is 0 36000 72000 108000 144000 180000
+    # seconds, a difftime placed as it is; turned into days and back, the last is 179999.99999999997.
+    test "a span of time's breaks are its seconds as found, never turned into its unit and back" do
+      assert Transform.breaks({:timespan, :day}, {0.0, 172_800.0}) ===
+               [0.0, 36_000.0, 72_000.0, 108_000.0, 144_000.0, 180_000.0]
+    end
+
     test "a span of time counts no breaks and has no derivatives, as R's" do
       breaks =
         assert_raise(ArgumentError, fn -> Transform.breaks(:timespan, {0.0, 3.0}, n: 3) end)
