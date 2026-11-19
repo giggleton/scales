@@ -82,7 +82,10 @@ the entry beginning "Axes are drawn"; why minor breaks are R's regular ones: the
   R hands back unconverted. Its tests pin R's values at places that tell `nlevels/1` apart (hue's
   last colour is its 255th hue).
 - **A discrete palette's spread is R's `seq()`** (`Palette.spread/2`): its ends exact, each value between found
-  by steps from the first (the fourth of seven is 0.54999999999999993).
+  by steps from the first (the fourth of seven is 0.54999999999999993); ends further apart than
+  the largest double halved, spread so and doubled back, which gives R's numbers to the last
+  digit (design-log §4, the entry beginning "A spread past the largest double"). Extended breaks
+  on a range that wide, and `zero_range()` of one, are R's too, through `Scales.Double`.
 - **A gradient is exactly R's `pal_gradient_n()`** (design-log §4, the entry beginning "A gradient
   is one palette"), which R's two- and three-colour gradients are too: its colours spaced evenly
   from 0 to 1 by R's `seq()`, a place between two neighbours blended in CIE L*a*b*

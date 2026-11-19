@@ -130,6 +130,21 @@ defmodule Scales.BreaksTest do
              ]
   end
 
+  # Golden: labeling::extended(low, high, 5), labeling 0.4.3 in R 4.6.1, on ranges further apart
+  # than the largest double, which it spaces evenly as R's `seq()` spreads them.
+  test "a range wider than the largest double gets five breaks spaced evenly, as R's" do
+    measured = [
+      {{-8.500_000_000_000_001e306, 1.785e308},
+       [-8.500_000_000_000_001e306, 3.825e307, 8.5e307, 1.3_175e308, 1.785e308]},
+      {{-1.7e308, 1.7e308}, [-1.7e308, -8.5e307, 0.0, 8.499_999_999_999_998e307, 1.7e308]},
+      {{-1.0e308, 1.0e308}, [-1.0e308, -5.0e307, 0.0, 5.0e307, 1.0e308]}
+    ]
+
+    for {extent, r_breaks} <- measured do
+      assert {extent, Breaks.extended(extent)} === {extent, r_breaks}
+    end
+  end
+
   test "a best sequence whose span is rounding error beside its size is its first break alone" do
     assert Breaks.extended({1.0e15, 1.0e15 + 0.25}) === [1.0e15]
   end

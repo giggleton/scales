@@ -194,7 +194,8 @@ defmodule Scales.Bounds do
   @doc """
   Whether a range is zero wide, R's `zero_range()`: its ends are equal, or so close, relative to
   the smaller, that their difference is rounding error, under 1000 times the machine epsilon. A
-  range with one infinite end is not, and one with both the same infinity is.
+  range with one infinite end is not, and one with both the same infinity is; nor is one whose
+  ends are further apart than the largest double, their difference infinite, as R's is.
 
   ## Examples
 
@@ -215,7 +216,13 @@ defmodule Scales.Bounds do
 
   def zero_range?({low, high}) when is_number(low) and is_number(high) do
     smaller = min(abs(low), abs(high))
-    smaller != 0 and abs((low - high) / smaller) < @zero_range_tolerance
+
+    smaller != 0 and
+      low
+      |> Double.subtract(high)
+      |> Double.divide(smaller)
+      |> Double.absolute()
+      |> Double.less?(@zero_range_tolerance)
   end
 
   def zero_range?({low, high}) when is_bound(low) and is_bound(high), do: false

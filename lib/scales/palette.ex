@@ -634,7 +634,9 @@ defmodule Scales.Palette do
   @doc """
   `count` numbers spread evenly from `low` to `high`, R's `seq(low, high, length.out = count)`:
   the ends exact, each number between them `low` plus its index times the step, in R's order of
-  operations, so the fourth of seven from 0.1 to 1 is `0.54999999999999993`, not `0.55`.
+  operations, so the fourth of seven from 0.1 to 1 is `0.54999999999999993`, not `0.55`. Ends
+  further apart than the largest double are halved, spread so and doubled back, which gives R's
+  numbers to the last digit, as measured.
 
   ## Examples
 
@@ -650,9 +652,25 @@ defmodule Scales.Palette do
   def spread({low, high}, 2), do: [low, high]
 
   def spread({low, high}, count) when count > 2 do
-    step = (high - low) / (count - 1)
-    between = Enum.map(1..(count - 2), fn index -> low + index * step end)
+    between =
+      if is_number(Double.subtract(high, low)),
+        do: between(low, high, count),
+        else: halved_between(low, high, count)
+
     Enum.concat([[low], between, [high]])
+  end
+
+  # The numbers `spread/2` puts between ends further apart than the largest double: those between
+  # their halves, doubled.
+  defp halved_between(low, high, count) do
+    halves = between(low / 2, high / 2, count)
+    Enum.map(halves, fn half -> 2 * half end)
+  end
+
+  # The numbers `spread/2` puts between the ends, `low` plus each index times the step.
+  defp between(low, high, count) do
+    step = (high - low) / (count - 1)
+    Enum.map(1..(count - 2), fn index -> low + index * step end)
   end
 
   # Each place through `function`, a number's colour or value; a missing place, NaN and the

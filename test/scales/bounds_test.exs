@@ -238,6 +238,14 @@ defmodule Scales.BoundsTest do
               Bounds.zero_range?({1, :neg_infinity})} === {true, true, false, false, false}
     end
 
+    # Golden: R 4.6.1's `scales::zero_range()` (scales 1.4.0) of `c(-1.7e308, 1.7e308)`,
+    # `c(-8.5e306, 1.785e308)` and `c(1e308, -1e308)`: each difference past the largest double is
+    # R's `Inf`, so none is zero wide.
+    test "ends further apart than the largest double are not zero wide" do
+      assert {Bounds.zero_range?({-1.7e308, 1.7e308}), Bounds.zero_range?({-8.5e306, 1.785e308}),
+              Bounds.zero_range?({1.0e308, -1.0e308})} === {false, false, false}
+    end
+
     # R's `zero_range(c(1, NA))` is `NA`, which `rescale()` then fails on. The end is built as the
     # test runs: a literal the guard refuses fails the type checker.
     test "an end that is not a number or an infinity is refused" do

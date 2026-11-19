@@ -933,6 +933,15 @@ deleted from the entry it was in, never marked superseded; git history keeps eve
   Lab is the scale's, as in R's scales. *Rejected: `color`'s own conversions*, 12 of 820 hue
   colours a byte out; *porting farver*; *`Giggly.Color`* (Steve: `Color.` could not be grepped
   apart from the library's) and *`Giggly.Colors`* (Steve).
+- **A spread past the largest double halves its ends (2026-11-19, Steve: "1", fix the chain so
+  plots that wide draw as R draws them).** R's `seq(low, high, length.out = n)` gives numbers
+  where `high - low` passes the largest double, as `labeling::extended()` spreads such a range;
+  `?seq` says nothing of how. Measured on nine ranges, from both ends at the largest double to
+  ranges just past it, of 2 to 11 values, its numbers are those between `low / 2` and `high / 2`
+  by the usual steps, doubled, to the last digit, so `Palette.spread/2` does that where the
+  subtraction overflows, and `Breaks.extended/2` spreads its widest ranges through it rather than
+  a copy. `Bounds.zero_range?/1` subtracts through `Scales.Double` beside it, giving R's FALSE.
+  *Rejected: translating `seq.default()`*, R's source; *refusing such ranges*, where R draws.
 
 ## 5. Testing approach
 

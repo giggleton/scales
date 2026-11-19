@@ -28,7 +28,8 @@ defmodule Scales.Breaks do
   #
   # Three ranges are handled as R handles them. One narrower than 100 times the machine epsilon,
   # or wider than the square root of the largest float (where Elixir's arithmetic would overflow
-  # rather than reach infinity), gets the number of breaks wanted spaced evenly from end to end. And
+  # rather than reach infinity), however wide, gets the number of breaks wanted spaced evenly from
+  # end to end, as `Scales.Palette.spread/2` spreads them. And
   # a best sequence whose span is within that tolerance of its ends' size, as on a narrow range of
   # large numbers, is its first break alone, as R's `seq()` returns it. Where R's scores reach
   # minus infinity and Elixir's arithmetic raises instead, a sequence whose first and last breaks
@@ -877,11 +878,15 @@ defmodule Scales.Breaks do
 
   # On an ordinary range a nice number of nice steps, and on the degenerate ranges what the
   # opening comment describes.
-  defp extended_breaks({low, high}, %{n: wanted})
-       when high - low < @epsilon or high - low > @widest_searched,
-       do: spaced_evenly(low, high, wanted)
+  defp extended_breaks({low, high} = range, %{n: wanted} = options) do
+    width = Double.subtract(high, low)
 
-  defp extended_breaks(range, options) do
+    if Double.less?(width, @epsilon) or Double.less?(@widest_searched, width),
+      do: Palette.spread(range, wanted),
+      else: searched(range, options)
+  end
+
+  defp searched(range, options) do
     %{nice_numbers: nice_numbers, weights: weights} = options
     preferred = preferences(nice_numbers)
     problem = Map.merge(options, %{range: range, weights: List.to_tuple(weights)})
@@ -1072,12 +1077,5 @@ defmodule Scales.Breaks do
       steps = trunc((last - first) / step + 1.0e-10)
       Enum.map(0..steps//1, fn index -> min(first + index * step, last) end)
     end
-  end
-
-  # R's `seq(from, to, length.out = wanted)`: `wanted` values from end to end, the ends exact.
-  defp spaced_evenly(low, high, wanted) do
-    width = (high - low) / (wanted - 1)
-    inner = Enum.map(1..(wanted - 2)//1, fn index -> low + index * width end)
-    Enum.concat([[low], inner, [high]])
   end
 end
