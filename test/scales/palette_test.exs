@@ -955,6 +955,14 @@ defmodule Scales.PaletteTest do
               Palette.spread({0.1, 1.0}, 0)} === {[0.1], [0.1, 1.0], []}
     end
 
+    # Golden: R 4.6.1's `seq(low, high, length.out = n)` on subnormal ends, `seq(0, 1.5e-323,
+    # length.out = 4)` and `seq(5e-324, 3e-323, length.out = 3)`, spread as any other: halving
+    # them, as ends past the largest double are, would round them away.
+    test "subnormal ends are spread unhalved, as R spreads them" do
+      assert {Palette.spread({0.0, 1.5e-323}, 4), Palette.spread({5.0e-324, 3.0e-323}, 3)} ===
+               {[0.0, 5.0e-324, 1.0e-323, 1.5e-323], [5.0e-324, 1.5e-323, 3.0e-323]}
+    end
+
     # Golden: R 4.6.1's `seq(low, high, length.out = n)` on ends further apart than the largest
     # double, the widest the largest double either side, in 17 digits.
     test "ends further apart than the largest double are spread as R spreads them" do

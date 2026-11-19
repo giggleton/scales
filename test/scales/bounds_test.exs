@@ -238,6 +238,16 @@ defmodule Scales.BoundsTest do
               Bounds.zero_range?({1, :neg_infinity})} === {true, true, false, false, false}
     end
 
+    # Golden: R 4.6.1's `scales::zero_range()` (scales 1.4.0) of `c(100, 100.0000000000222)`, TRUE,
+    # and of `c(1e-20, 2e-20)`, `c(0, 1e-300)` and `c(-1e-300, 0)`, FALSE: the difference is read
+    # relative to the smaller end, so a wide difference between large ends is zero wide and a tiny
+    # one between tiny ends is not, nor any beside 0.
+    test "the tolerance is relative to the smaller end, not an absolute difference" do
+      assert {Bounds.zero_range?({100.0, 100.000_000_000_022_2}),
+              Bounds.zero_range?({1.0e-20, 2.0e-20}), Bounds.zero_range?({0.0, 1.0e-300}),
+              Bounds.zero_range?({-1.0e-300, 0.0})} === {true, false, false, false}
+    end
+
     # Golden: R 4.6.1's `scales::zero_range()` (scales 1.4.0) of `c(-1.7e308, 1.7e308)`,
     # `c(-8.5e306, 1.785e308)` and `c(1e308, -1e308)`: each difference past the largest double is
     # R's `Inf`, so none is zero wide.

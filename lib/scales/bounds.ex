@@ -215,14 +215,14 @@ defmodule Scales.Bounds do
   def zero_range?({low, high}) when is_bound(low) and is_bound(high) and low == high, do: true
 
   def zero_range?({low, high}) when is_number(low) and is_number(high) do
+    # Over a smaller end of 0 the quotient is infinite, so ends 0 and any other are not zero wide.
     smaller = min(abs(low), abs(high))
 
-    smaller != 0 and
-      low
-      |> Double.subtract(high)
-      |> Double.divide(smaller)
-      |> Double.absolute()
-      |> Double.less?(@zero_range_tolerance)
+    low
+    |> Double.subtract(high)
+    |> Double.divide(smaller)
+    |> Double.absolute()
+    |> Double.less?(@zero_range_tolerance)
   end
 
   def zero_range?({low, high}) when is_bound(low) and is_bound(high), do: false
