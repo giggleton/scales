@@ -22,7 +22,7 @@ Scales.Labels.comma([10.0, 15.0, 20.0], suffix: " km")
 
 ```elixir
 def deps do
-  [{:scales, "~> 0.1"}]
+  [{:scales, "~> 0.2"}]
 end
 ```
 
