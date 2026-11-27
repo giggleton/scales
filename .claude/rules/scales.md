@@ -424,17 +424,17 @@ the entry beginning "Axes are drawn"; why minor breaks are R's regular ones: the
   beginning "`n:` reaches"): on numbers, the width over the number wanted, one for none, rounded
   to 1, 2, 5 or 10 times its power of ten, up from just above R's switches, 1.4, 2.8 and 7,
   measured from R's output since R documents every step but that one; every multiple from the
-  low limit's down to the high one's up, by the quotient, a step in where that multiple itself
-  reaches the limit and never one out, spread as R's `seq()` spreads them, the multiple zero
-  exactly 0. Dates and date-times are their transformation's, typed, each a `{break, label}` pair,
+  low limit's down to the high one's up, by the quotient, **a limit within a ten-billionth of a
+  step of a multiple on it, and the break at that end the limit itself where the multiple lies
+  past it**, as R takes one, measured from its output (design-log §4, the entry beginning "A
+  numbers' `pretty()` limit"), spread as R's `seq()` spreads them, the multiple zero exactly 0. Dates and date-times are their transformation's, typed, each a `{break, label}` pair,
   the label R's name for it, `Transform.format/4`'s with the same `n:`, a zero-wide range's
   written in full as R writes a break it has not named (Giggly's design log §4, the entry beginning
   "A breaks function"); times numbers' on their
   seconds, wrapped past midnight; a zero-wide range its first limit. Refused: limits past 1e307 and a width per interval under the smallest
-  normal float, where R answers or warns. All of 1,500 whole-number ranges, 2,946 of 2,992 round
-  and 2,567 of 2,699 random ones matched R, the rest at an end, where R counts a limit within a
-  ten-billionth of a step of a multiple as on it, as only its C says. Its tests pin R's figures
-  at each switch and each rounding.
+  normal float, where R answers or warns. 6,992 of 7,000 random and few-decimal ranges matched R
+  to the last digit, the rest of zero width. Its tests pin R's figures at each switch, each
+  rounding and each end R takes to be on a break.
 - **Labels are written the Elixir way, not R's** (`Scales.Labels.plain/1`): `inspect`'s plain
   decimals, rounded to 15 significant digits, as many decimals on every label as the most precise
   needs, none when all are whole, negative zero as `0`, never scientific, no thousands separators,

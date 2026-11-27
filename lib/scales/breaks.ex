@@ -186,6 +186,9 @@ defmodule Scales.Breaks do
 
   # The largest limits `pretty/2` breaks, and the smallest step: beyond them its arithmetic
   # would pass the largest double or reach the subnormal ones.
+  # How near a whole number of steps a limit's quotient may be and count as on a break, R's.
+  @on_multiple 1.0e-10
+
   @largest_pretty 1.0e307
   @smallest_double 2.2250738585072014e-308
 
@@ -500,7 +503,8 @@ defmodule Scales.Breaks do
 
   On numbers each step is 1, 2, 5 or 10 times a power of ten: the limits' width over the number
   wanted, rounded to the nearest of those, and the breaks every multiple of it from the low limit
-  rounded down to one to the high limit rounded up. On dates and date-times they are R's calendar
+  rounded down to one to the high limit rounded up, a limit within a ten-billionth of a step of a
+  multiple taken to be on it and then the break at its end itself, as R takes one. On dates and date-times they are R's calendar
   and clock steps, from a second to a thousand years, the one that cuts the limits closest to
   `n:` times, a `DateTime` broken on its zone's clock, read by `time_zone_database:`, each break
   with its label, `{break, label}`, as R names its breaks: written in the format of the step, as
@@ -589,8 +593,10 @@ defmodule Scales.Breaks do
   end
 
   # The multiples of the nice step nearest the width over the intervals wanted, one wanted for
-  # none, as R takes it, from the low limit rounded down to one to the high limit rounded up,
-  # spread from the first to the last as R's `seq()` spreads them, the multiple zero exactly 0.
+  # none, as R takes it, from the low limit rounded down to one to the high limit rounded up, a
+  # limit within a ten-billionth of a step of a multiple counting as on it; spread as R's `seq()`
+  # spreads them from the first break to the last, each the limit itself where the multiple lies
+  # past it, as R ends its breaks at a limit it takes to be on one, the multiple zero exactly 0.
   defp nice_breaks({low, high} = limits, wanted) do
     cell = (high - low) / max(wanted, 1)
 
@@ -605,7 +611,7 @@ defmodule Scales.Breaks do
     first = multiple_below(low, step)
     last = multiple_above(high, step)
 
-    {first * step, last * step}
+    {min(first * step, low), max(last * step, high)}
     |> Palette.spread(last - first + 1)
     |> Enum.zip_with(first..last//1, fn break, multiple ->
       if multiple == 0, do: 0.0, else: break
@@ -613,20 +619,12 @@ defmodule Scales.Breaks do
   end
 
   # The multiple of `step` at or below `value`, and at or above it: the quotient rounded down, or
-  # up, but the next multiple in where that multiple itself reaches the value, since the
-  # quotient's rounding can put a value on a multiple a hair past it. A multiple a hair short of
-  # the value, by the quotient, is kept, as R's tolerance keeps it, so no break goes beyond.
-  defp multiple_below(value, step) do
-    multiple = trunc(Float.floor(value / step))
-
-    if (multiple + 1) * step <= value, do: multiple + 1, else: multiple
-  end
-
-  defp multiple_above(value, step) do
-    multiple = trunc(Float.ceil(value / step))
-
-    if (multiple - 1) * step >= value, do: multiple - 1, else: multiple
-  end
+  # up, a quotient within `@on_multiple` of a whole number taken as it, as R's `pretty()` takes a
+  # limit that close to a multiple to be on it, measured against R (2026-11-27,
+  # `scales-pretty/tolerance2.R` in the sweep tools): a limit a ten-billionth of a step short of a
+  # break, at steps of 1e-5, 0.1 and 10, is on it, and one more short is not.
+  defp multiple_below(value, step), do: trunc(Float.floor(value / step + @on_multiple))
+  defp multiple_above(value, step), do: trunc(Float.ceil(value / step - @on_multiple))
 
   defp nice_fraction(fraction) do
     Enum.find_value(@nice_fractions, 10, fn {nice, most} -> if fraction <= most, do: nice end)

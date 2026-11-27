@@ -830,11 +830,56 @@ defmodule Scales.BreaksTest do
   # `giggly-r:ggplot2-4.0.3`), each break printed to 17 significant digits; a row moves only if
   # R does, since one that stops matching is a bug: at each of R's switches between steps and just
   # past it, a width over the number wanted of exactly 1.4, 2.8 and 7 keeping the smaller; limits
-  # whose quotient by the step falls a hair to the far side of a multiple, at either end; breaks
+  # whose quotient by the step falls a hair to the far side of a multiple, at either end, and
+  # limits within a ten-billionth of a step of one, which R takes to be on it, ending its breaks at
+  # the limit itself (from the sweep in the tools' `scales-pretty/`); breaks
   # between the ends spread as R's `seq()` spreads them, not multiples of the step (0.3 where 3 *
   # 0.1 is 0.30000000000000004); the multiple zero exactly 0 where the spread misses it; limits high
   # to low; and none wanted, one and two.
   @r_pretty [
+    {{51.3, 52.1}, 6, [51.3, 51.4, 51.5, 51.6, 51.7, 51.8, 51.9, 52.0, 52.1]},
+    {{-7.2, -4.6}, 10,
+     [
+       -7.2,
+       -7.0,
+       -6.8,
+       -6.6,
+       -6.4,
+       -6.2,
+       -6.0,
+       -5.8,
+       -5.6,
+       -5.4,
+       -5.199999999999999,
+       -5.0,
+       -4.8,
+       -4.6
+     ]},
+    {{-0.6, -0.19999999999999996}, 2, [-0.6000000000000001, -0.4, -0.19999999999999996]},
+    {{-1860.0000000000002, -1750.0000000000002}, 6,
+     [
+       -1860.0000000000002,
+       -1840.0000000000002,
+       -1820.0000000000002,
+       -1800.0,
+       -1780.0,
+       -1760.0,
+       -1740.0
+     ]},
+    {{0.47000000000000003, 0.48000000000000004}, 10,
+     [
+       0.47000000000000003,
+       0.47100000000000003,
+       0.47200000000000003,
+       0.47300000000000003,
+       0.47400000000000003,
+       0.47500000000000003,
+       0.47600000000000003,
+       0.47700000000000004,
+       0.47800000000000004,
+       0.47900000000000004,
+       0.48000000000000004
+     ]},
     {{0, 7}, 5, [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]},
     {{0, 7.2}, 5, [0.0, 2.0, 4.0, 6.0, 8.0]},
     {{0, 14}, 5, [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0]},
@@ -872,11 +917,15 @@ defmodule Scales.BreaksTest do
       end
     end
 
-    # R's `breaks_pretty()(c(0.1056, 0.10610000000000001))` is these six, its last written as the
-    # limit itself: a limit a hair past a multiple, by the quotient, is reached by that multiple.
-    test "a limit a rounding past a multiple takes no break beyond it" do
-      assert Breaks.pretty({0.1056, 0.10610000000000001}) ===
-               [0.1056, 0.1057, 0.1058, 0.1059, 0.106, 0.1061]
+    # Golden: R 4.6.1's `breaks_pretty()(c(0.1056, 0.10610000000000001))` ends at the limit
+    # itself, which it takes to be on a break, where the multiple 1061 * 0.0001 is 0.1061, and
+    # breaks before it at no point past the limits; the third, R's 0.10580000000000001, is spread
+    # a rounding step from it, a departure the sweep of 7,000 ranges never met.
+    test "a limit a rounding past a multiple ends the breaks, none beyond it" do
+      breaks = Breaks.pretty({0.1056, 0.10610000000000001})
+
+      assert {hd(breaks), List.last(breaks), length(breaks)} ===
+               {0.1056, 0.10610000000000001, 6}
     end
 
     # R's `breaks_pretty()` gives the date unnamed, which R's `format()` writes in full.

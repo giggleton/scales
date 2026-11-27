@@ -674,8 +674,19 @@ deleted from the entry it was in, never marked superseded; git history keeps eve
   it rounds up from just above 1.4, 2.8 and 7, R's switches found by bisecting its output.
   *Rejected: time passing `n:` to `timespan`*: R's `transform_hms()` takes no number.
   *Rejected: Heckbert's 1.5, 3 and 7*: 91.4% of 7,191 ranges matched R, against 97.5%, twice
-  R's breaks on the rest. *Rejected: R's tolerance at the ends*: only its C holds it, and its breaks there are
-  not round. *Rejected: `pretty()`'s biases and shrinking*: they set the rule R leaves out.
+  R's breaks on the rest. *Rejected: `pretty()`'s biases and shrinking*: they set the rule R
+  leaves out.
+
+- **A numbers' `pretty()` limit within a ten-billionth of a step of a multiple is on it, and the
+  break at that end is the limit itself, as R takes it (2026-11-27, Steve: "a", then "change it",
+  replacing a rejection of R's tolerance at the ends of 2026-10-29).** Measured from R's output,
+  never its C: at steps of 1e-5, 0.1 and 10, a limit 1e-10 of a step short of a break, by the
+  quotient, is on it, and one further short is not. So `pretty({51.3, 52.1}, n: 6)` starts at
+  51.3, where floors put it at 51.2, and a coordinate system's graticule there spans R's points.
+  Over 7,000 ranges 6,992 match R to the last digit, where 6,974 did; the rest have zero width,
+  which `pretty/2` answers alone; one known case spreads an interior break a rounding step from
+  R's. *Rejected: floors without the tolerance*, kept in October because only R's C held it and
+  its end breaks are not round; measured, it is R's drawing.
 
 - **Minor breaks a number or a width to each gap are R's `loop_breaks()`, the width's typed as
   `Breaks.width/3` is, the number's on numbers alone (2026-10-29, Steve: "A", increment 2's step
